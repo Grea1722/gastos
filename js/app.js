@@ -21,7 +21,15 @@ class Presupuesto {
 
   nuevoGasto(gasto) {
     this.gastos = [...this.gastos, gasto];
-    console.log(this.gastos);
+    this.calcularRestante();
+  }
+
+  calcularRestante() {
+    const gastado = this.gastos.reduce(
+      (total, gasto) => total + gasto.cantidad,
+      0
+    );
+    this.restante = this.presupuesto - gastado;
   }
 }
 
@@ -53,6 +61,40 @@ class UI {
       divMensaje.remove();
     }, 3000);
   }
+
+  agregarGastoListado(gastos) {
+    this.limpiarHtml();
+    //iterar sobre los gastos
+    gastos.forEach((gasto) => {
+      const { cantidad, nombre, id } = gasto;
+      //crear li
+      const nuevoGasto = document.createElement("li");
+      nuevoGasto.className =
+        "list-group-item d-flex justify-content-between align-items-center";
+      // nuevoGasto.setAttribute("data-id", id);
+      nuevoGasto.dataset.id = id;
+      //agregar gasto html
+      nuevoGasto.innerHTML = `${nombre} <span class='badge badge-primary badge-pill'>$${cantidad}</span>`;
+
+      //btn para borrar
+      const btnBorrar = document.createElement("button");
+      btnBorrar.classList.add("btn", "btn-danger", "borrar-gasto");
+      btnBorrar.innerHTML = "Borrar &times";
+      nuevoGasto.appendChild(btnBorrar);
+      //agregar al html
+      gastoListado.appendChild(nuevoGasto);
+    });
+  }
+
+  actualizarRestante(restante) {
+    document.querySelector("#restante").textContent = restante;
+  }
+
+  limpiarHtml() {
+    while (gastoListado.firstChild) {
+      gastoListado.removeChild(gastoListado.firstChild);
+    }
+  }
 }
 
 //instanciar
@@ -61,7 +103,6 @@ let presupuesto;
 //Funciones
 function preguntarPresupuesto() {
   const presupuestoUsuario = prompt("Cual es tu presupuesto?");
-  console.log(Number(presupuestoUsuario));
 
   if (
     presupuestoUsuario === "" ||
@@ -99,6 +140,11 @@ function agregarGasto(e) {
   presupuesto.nuevoGasto(gasto);
 
   ui.imprimirAlerta("Gasto agregado correctamente");
+
+  const { gastos, restante } = presupuesto;
+  ui.agregarGastoListado(gastos);
+
+  ui.actualizarRestante(restante);
 
   //reiniciar formulario
   formulario.reset();
