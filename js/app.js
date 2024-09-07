@@ -31,6 +31,11 @@ class Presupuesto {
     );
     this.restante = this.presupuesto - gastado;
   }
+
+  eliminarGasto(id) {
+    this.gastos = this.gastos.filter((gasto) => gasto.id !== id);
+    this.calcularRestante();
+  }
 }
 
 class UI {
@@ -80,7 +85,12 @@ class UI {
       const btnBorrar = document.createElement("button");
       btnBorrar.classList.add("btn", "btn-danger", "borrar-gasto");
       btnBorrar.innerHTML = "Borrar &times";
+      btnBorrar.onclick = () => {
+        eliminarGasto(id);
+      };
+
       nuevoGasto.appendChild(btnBorrar);
+
       //agregar al html
       gastoListado.appendChild(nuevoGasto);
     });
@@ -88,6 +98,31 @@ class UI {
 
   actualizarRestante(restante) {
     document.querySelector("#restante").textContent = restante;
+  }
+
+  comprobarPresupuesto(presupuestObj) {
+    const { presupuesto, restante } = presupuestObj;
+
+    const restanteDiv = document.querySelector(".restante");
+
+    if (presupuesto / 4 > restante) {
+      restanteDiv.classList.remove("alert-succes");
+      restanteDiv.classList.add("alert-danger");
+    } else if (presupuesto / 2 > restante) {
+      restanteDiv.classList.remove("alert-succes", "alert-warning");
+      restanteDiv.classList.add("alert-warning");
+    } else {
+      restanteDiv.classList.remove("alert-danger", "alert-warning");
+      restanteDiv.classList.add("alert-success");
+    }
+
+    //si el total es menor a 0
+
+    if (restante <= 0) {
+      ui.imprimirAlerta("Presupuesto agotado", "error");
+
+      formulario.querySelector('button[type="submit"]').disabled = true;
+    }
   }
 
   limpiarHtml() {
@@ -146,6 +181,21 @@ function agregarGasto(e) {
 
   ui.actualizarRestante(restante);
 
+  ui.comprobarPresupuesto(presupuesto);
+
   //reiniciar formulario
   formulario.reset();
+}
+
+function eliminarGasto(id) {
+  //eliminar gastos del objeto
+  presupuesto.eliminarGasto(id);
+
+  //aliminar gastos de html
+  const { gastos, restante } = presupuesto;
+  ui.agregarGastoListado(gastos);
+
+  ui.actualizarRestante(restante);
+
+  ui.comprobarPresupuesto(presupuesto);
 }
